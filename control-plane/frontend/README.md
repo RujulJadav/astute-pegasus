@@ -12,8 +12,10 @@ nothing changes for anyone using `/` until we switch.
 |---|---|
 | Sign-in | **Live.** First-admin setup, email + password, authenticator setup (real QR), recovery codes, 6-digit or recovery code, forced password change, Google sign-in when the server has it on, sign out |
 | Fleet | **Live.** Customers, environments, servers and domains, domain states (polled every 30 s), connector status, Check status, Start / Stop / Restart / Clear cache / Test connection per environment and per domain, typed confirmation on production, live job output, recent jobs |
+| Patching | **Live.** Per environment: installed levels and Oracle's latest (Check patch levels, Look up latest again), outstanding updates ranked by CVSS from Oracle's advisory, by component or by server, Download (stage) per update or all, change ticket (Request approval with window, time zone, change type, notes), ticket list with Check now and Withdraw, Apply (typed confirmation on production, reboot option) with live output, monthly/quarterly cadence, automatic checks |
+| Integrations | **Live** for the ticketing adapters: Jira and ServiceNow settings per customer (URL, sign-in, project or group, approval states, transitions, extra fields), token saved encrypted and never sent back, Test connection, which system approvals go through, approval for every environment or production only. The other adapters are shown as not in Pegasus yet |
 | My account | **Live.** Change password, new recovery codes |
-| Mission Control, Patching, Monitoring, SSH access, Schedules, Connectors, Integrations, Settings, People, Audit log | Sample data, with a banner saying so. Next to connect |
+| Mission Control, Monitoring, SSH access, Schedules, Connectors, Settings, People, Audit log | Sample data, with a banner saying so. Next to connect |
 | On a Fleet tile or environment: uptime, alerts, Jira ticket, monitoring, logs, removal, Add servers, Connect OCI | Not in the API yet, so they're hidden or empty for live environments rather than made up |
 
 ## Run it
@@ -35,8 +37,11 @@ Then either:
 * **Use the built UI**: `npm run build` writes it to `control-plane/pegasus_cloud/static/next/`; open
   http://127.0.0.1:8443/next/. The build is committed, so the control plane serves it without Node.
 
-For something to look at without real servers, run a connector against simulated ones:
-`python scripts/demo_servers.py --config <connector config.json>` (see the repo README).
+**Everything at once, with nothing real behind it** (from the repo root): `python scripts/dev_stack.py`, then open
+http://127.0.0.1:8443/next/ (setup password `dev-setup-password`). It runs the control plane, a connector registered
+to a sample client, simulated servers, a stand-in Oracle (levels, the latest releases and downloads work offline) and a
+stand-in Jira/ServiceNow that approves each ticket 20 seconds after it's raised, so the whole patching flow can be
+tried end to end. `--reset` starts again from an empty database.
 
 ## How it talks to the backend
 
@@ -46,6 +51,10 @@ For something to look at without real servers, run a connector against simulated
   maps them into the same shape as the design's sample data (`src/shared/data.js`), so screens switch over without
   being rewritten. It also queues jobs (`POST /api/clients/<id>/run`) and runs Check status.
 * `parts/JobConsole.jsx` streams a job's output from `GET /api/jobs/<id>?since=<n>`.
+* `screens/LivePatching.jsx` and `screens/LiveIntegrations.jsx` are the live versions of those screens (the endpoints
+  they use are listed at the top of each file); `Patching.jsx` and `Integrations.jsx` keep the design's demo for `?demo`.
+  The backend applies one update or all outstanding updates per window and per ticket, so Patching's selection is one
+  row or all of them.
 
 Domain states use the backend's key, `environment|ip-or-host|role|domain`.
 

@@ -4,6 +4,8 @@ import { Blocks, Ticket, Activity, Cloud, Mail, Check, Loader2, FileCode2, Shiel
 import { cx } from "../../shared/ui.jsx";
 import { integrations, agent, clients } from "../../shared/data.js";
 import { Panel, PanelHead, Button, Pill, PageHeader, Drawer, Field, inputCls, Segmented, Sparkle, ease } from "../kit.jsx";
+import LiveIntegrations from "./LiveIntegrations.jsx";
+import { useLive } from "../../api/live.jsx";
 
 const GROUP_ICON = [Ticket, Activity, Cloud, Mail];
 const ITEM_ICON = { jira: Ticket, servicenow: Workflow, webhook: Webhook, "oci-monitoring": Activity, "oci-logging": ScrollText, solarwinds: Sun, nagios: Radar, oci: Cloud, azure: Cloud, aws: Server, onprem: Building2, email: Mail, google: KeyRound, teams: MessagesSquare, slack: Hash };
@@ -13,6 +15,10 @@ const STATUS = {
 };
 
 export default function Integrations() {
+  return useLive().live ? <LiveIntegrations /> : <DemoIntegrations />;
+}
+
+function DemoIntegrations() {
   const [cfg, setCfg] = useState(null);
   return (
     <div className="@container">

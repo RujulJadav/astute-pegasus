@@ -10,11 +10,17 @@ import { Panel, PanelHead, Button, Pill, PageHeader, ScoreDial, Segmented, SEV, 
 import { useShell } from "../App.jsx";
 import RequestApproval from "./RequestApproval.jsx";
 import PatchRun from "./PatchRun.jsx";
+import LivePatching from "./LivePatching.jsx";
+import { useLive } from "../../api/live.jsx";
 
 const APPROVED = changeRequest.plan;
 const NEEDED = patchHosts.flatMap((h) => h.items.filter((it) => it.status === "needed").map((it) => `${h.host}|${it.comp}`));
 
 export default function Patching() {
+  return useLive().live ? <LivePatching /> : <DemoPatching />;
+}
+
+function DemoPatching() {
   const { askAgent } = useShell();
   const [cadence, setCadence] = useState("monthly");
   const [sel, setSel] = useState(new Set(APPROVED));

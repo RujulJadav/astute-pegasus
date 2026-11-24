@@ -32,7 +32,7 @@ function LiveConsole({ job, onClose }) {
         if (j.text) setText((t) => t + j.text);
         since = j.next ?? since;
         setInfo(j);
-        if (DONE.includes(j.status)) { refresh?.(); return; }
+        if (DONE.includes(j.status)) { refresh?.(); job.onDone?.(j); return; }
       } catch (e) {
         if (!stop) setErr(e.message);
       }

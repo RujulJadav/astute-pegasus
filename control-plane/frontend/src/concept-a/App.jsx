@@ -29,12 +29,12 @@ import ConsoleAi from "./parts/ConsoleAi.jsx";
 export const NAV = [
   { id: "home", label: "Mission Control", icon: Radar, el: Home },
   { id: "fleet", label: "Fleet", icon: Server, el: Fleet, live: true },
-  { id: "patching", label: "Patching", icon: ShieldCheck, el: Patching, badge: 1 },
+  { id: "patching", label: "Patching", icon: ShieldCheck, el: Patching, badge: 1, live: true },
   { id: "monitoring", label: "Monitoring", icon: Activity, el: Monitoring, badge: 1, tone: "orange" },
   { id: "access", label: "SSH access", icon: KeyRound, el: Access, badge: 1 },
   { id: "schedules", label: "Schedules", icon: CalendarClock, el: Schedules },
   { id: "connectors", label: "Connectors", icon: Cable, el: Connectors },
-  { id: "integrations", label: "Integrations", icon: Blocks, el: Integrations },
+  { id: "integrations", label: "Integrations", icon: Blocks, el: Integrations, live: true },
   { id: "settings", label: "Settings", icon: Settings2, el: Settings },
   { id: "people", label: "People", icon: Users, el: People },
   { id: "audit", label: "Audit log", icon: ScrollText, el: Audit },
@@ -123,7 +123,7 @@ function SampleBanner() {
   return (
     <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-dashed border-apricot/70 bg-apricot/10 px-4 py-2.5 text-[12.5px] text-fg">
       <FlaskConical className="size-4 shrink-0 text-warn day:text-orange" />
-      <span><b className="font-medium">Sample data.</b> This screen isn't connected to the control plane yet. Fleet and sign-in are live.</span>
+      <span><b className="font-medium">Sample data.</b> This screen isn't connected to the control plane yet. Sign-in, Fleet, Patching and Integrations are live.</span>
     </div>
   );
 }
@@ -155,6 +155,7 @@ function Atmosphere({ day }) {
 }
 
 function Rail({ page, go }) {
+  const { live } = useLive();
   return (
     <nav aria-label="Modules" className="relative z-10 flex w-[76px] shrink-0 flex-col items-center border-r border-line bg-rail py-4">
       <button onClick={() => go("home")} className="mb-6 grid size-11 place-items-center rounded-xl bg-navy ring-1 ring-fg/10 day:bg-white day:shadow-[0_4px_14px_-6px_#003C5159]" aria-label="Pegasus home">
@@ -178,7 +179,7 @@ function Rail({ page, go }) {
                   )}
                   {on && <motion.span layoutId="rail-bar" className="absolute -left-[17px] h-5 w-[3px] rounded-r bg-accent shadow-[0_0_12px_#00C6FF] day:bg-cyan" />}
                   <n.icon className="relative size-[19px]" strokeWidth={1.8} />
-                  {n.badge && (
+                  {n.badge && !live && (
                     <span className={cx("absolute right-1.5 top-1.5 size-2 rounded-full ring-2 ring-navy day:ring-white", n.tone === "orange" ? "bg-orange" : "bg-accent")} />
                   )}
                 </button>
@@ -187,7 +188,7 @@ function Rail({ page, go }) {
           );
         })}
       </div>
-      {!useLive().live && <Tooltip content="All design directions" side="right">
+      {!live && <Tooltip content="All design directions" side="right">
         <a href="index.html" className="grid size-11 place-items-center rounded-xl text-muted/70 hover:bg-fg/[0.06] hover:text-fg" aria-label="All design directions">
           <LayoutGrid className="size-[18px]" strokeWidth={1.8} />
         </a>
