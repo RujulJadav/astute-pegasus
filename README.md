@@ -7,6 +7,7 @@ for environments on OCI, Azure, AWS or on-prem.
 |---|---|
 | `pegasus/` | Pegasus as it runs today: a self-hosted web app on an admin/jump host. See `pegasus/README.md`. |
 | `control-plane/` | Pegasus Cloud: the hosted web app and job queue (SaaS). |
+| `control-plane/frontend/` | The redesigned UI (Mission Control), served at `/next/` beside the current page. See its README. |
 | `connector/` | The agent each client runs in their own network. Outbound HTTPS only, keys stay with the client. |
 | `tests/` | End-to-end tests: real control plane and connector, simulated PeopleSoft servers. |
 | `scripts/demo_servers.py` | Runs a connector against simulated servers, for demos. |

@@ -1,0 +1,88 @@
+/* Astute brand foundation shared by every Pegasus design direction.
+   Source: Astute Brand Guidelines.pdf (colours p.6, gradients p.7, type p.8–9).
+   The Tailwind default palette is wiped (--color-*: initial), so the only colour utilities
+   that exist are the brand colours below. Opacity modifiers (bg-teal/20) are tints of a
+   brand colour, which is how the guideline itself draws the cyan and mint swatches (50%). */
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Overpass";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../../node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../../node_modules/@fontsource-variable/roboto/files/roboto-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "Overpass Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../../node_modules/@fontsource/overpass-mono/files/overpass-mono-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Overpass Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../../node_modules/@fontsource/overpass-mono/files/overpass-mono-latin-600-normal.woff2") format("woff2");
+}
+
+@theme {
+  --color-*: initial;
+
+  /* primary */
+  --color-teal: #0B89A1;
+  --color-cyan: #00C6FF;
+  --color-navy: #003C51;
+  /* secondary */
+  --color-cream: #F2E8C4;
+  --color-mint: #E6F4F1;
+  /* neutral */
+  --color-black: #000000;
+  --color-graphite: #6D6E71;
+  --color-silver: #BCBDC0;
+  --color-mist: #F6F6F6;
+  --color-white: #FFFFFF;
+  /* accent */
+  --color-orange: #FA9137;
+  /* gradient stops (p.7) */
+  --color-peach: #FDD8B9;
+  --color-apricot: #FBB273;
+
+  --font-display: "Overpass", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Roboto", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Overpass Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* brand type scale (p.9) */
+  --text-h1: 60px;  --text-h1--line-height: 70px;
+  --text-h2: 42px;  --text-h2--line-height: 52px;
+  --text-h3: 38px;  --text-h3--line-height: 48px;
+  --text-h4: 24px;  --text-h4--line-height: 34px;
+  --text-h5: 20px;  --text-h5--line-height: 30px;
+  --text-h6: 18px;  --text-h6--line-height: 28px;
+  --text-body: 16px; --text-body--line-height: 26px;
+  --text-small: 14px; --text-small--line-height: 24px;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+  body { font-family: var(--font-sans); }
+  h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); font-weight: 700; }
+  button { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+  :focus-visible { outline: 2px solid var(--color-cyan); outline-offset: 2px; border-radius: 6px; }
+  .tabular { font-variant-numeric: tabular-nums; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}

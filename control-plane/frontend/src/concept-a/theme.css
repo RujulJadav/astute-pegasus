@@ -1,0 +1,111 @@
+/* Mission Control themes. Brand colours only: every value below is an Astute hex, optionally with an alpha byte,
+   or a stack of them. Components use roles (text-fg, bg-surface, text-accent…), never a theme's raw colours.
+
+   NIGHT · "Deep Ink" (unchanged from the approved night design)
+   - ink (page):  Navy 40% over Black · surface (cards): ink + Teal 10% + White 3% · raised (menus): one step lighter
+   - text: White headings, Mint body, Silver secondary · accent: Cyan · risk: Orange · warning: Apricot · agent: Cream→Mint
+
+   DAY · "Mint Morning" (the DEFAULT since the 5 Nov review: flat light page, gradients only on tiles and buttons) (built on the guideline's own light UI: p.10 buttons, icon tiles and Mint "light background")
+   - page: Mist under a Mint wash (top left) and a Cream glow (top right) · cards and menus: White with Navy-tinted shadows
+   - text: Navy; secondary text is Navy at 80% and 70% (6.3:1 and 4.7:1 on Mist, both AA), slate tones, never grey · accent: Teal (filled and outlined
+     buttons as in the guideline) · risk and warning: Orange and Apricot as fills and marks, with Navy text on them
+   - agent: "Aurora", a conic sweep of Teal → Cyan → Mint → Cream → Peach → Apricot used only on agent surfaces */
+@import "../shared/brand.css";
+
+@custom-variant day (&:where([data-theme=day], [data-theme=day] *):not(:where([data-theme=night], [data-theme=night] *)));
+
+@theme {
+  --color-canvas: #000000;
+  --color-line: #0B89A138;
+  --color-fg: #FFFFFF;
+  --color-body: #E6F4F1;
+  --color-muted: #BCBDC0;
+  --color-accent: #00C6FF;
+  --color-on-accent: #003C51;
+  --color-risk: #FA9137;
+  --color-warn: #FBB273;
+  --color-agent: #F2E8C4;
+}
+
+:root, [data-theme="night"] {
+  --color-line: #0B89A138;
+  --color-fg: #FFFFFF;
+  --color-body: #E6F4F1;
+  --color-muted: #BCBDC0;
+  --color-accent: #00C6FF;
+  --color-on-accent: #003C51;
+  --color-risk: #FA9137;
+  --color-warn: #FBB273;
+  --color-agent: #F2E8C4;
+  --layer-ink: linear-gradient(#003C5166, #003C5166) #000000;
+  --layer-well: linear-gradient(#0000002e, #0000002e), linear-gradient(#003C5166, #003C5166) #000000;
+  --layer-surface: linear-gradient(#FFFFFF08, #FFFFFF08), linear-gradient(#0B89A11a, #0B89A11a), linear-gradient(#003C5166, #003C5166) #000000;
+  --layer-raised: linear-gradient(#FFFFFF0f, #FFFFFF0f), linear-gradient(#0B89A126, #0B89A126), linear-gradient(#003C5180, #003C5180) #000000;
+  --layer-term: var(--layer-well);
+  --layer-rail: #003C51;
+  --layer-scrim: #000000bf;
+  --elev-card: inset 0 1px 0 #FFFFFF0d;
+  --elev-pop: 0 24px 60px -12px #003C51;
+  --sparkle-fill: currentColor;
+
+}
+
+[data-theme="day"] {
+  --color-line: #003C511c;
+  --color-fg: #003C51;
+  --color-body: #003C51;
+  --color-muted: #003C51;
+  --color-accent: #0B89A1;
+  --color-on-accent: #FFFFFF;
+  --color-risk: #003C51;
+  --color-warn: #003C51;
+  --color-agent: #0B89A1;
+  --layer-ink: #F6F6F6;
+  --layer-well: linear-gradient(#003C510b, #003C510b) #FFFFFF;
+  --layer-surface: #FFFFFF;
+  --layer-raised: #FFFFFF;
+  --layer-term: linear-gradient(#0000002e, #0000002e), #003C51;
+  --layer-rail: #FFFFFF;
+  --layer-scrim: #003C5159;
+  --elev-card: 0 1px 2px #003C510f, 0 12px 32px -20px #003C5140;
+  --elev-pop: 0 28px 70px -20px #003C5166, 0 2px 6px #003C510f;
+  --sparkle-fill: url(#aurora-fill);
+  color-scheme: light;
+}
+
+/* Night islands inside the day theme (terminals, the Pegasus core node, the hero tile) restore the night roles,
+   but sit on Navy rather than near-black ink so the day page never shows a black block. */
+[data-theme="day"] [data-theme="night"] {
+  color: var(--color-fg);
+  --layer-well: linear-gradient(#0000001f, #0000001f), #003C51;
+  --layer-term: linear-gradient(#0000002e, #0000002e), #003C51;
+}
+
+@utility bg-ink     { background: var(--layer-ink); }
+@utility bg-well    { background: var(--layer-well); }
+@utility bg-surface { background: var(--layer-surface); }
+@utility bg-raised  { background: var(--layer-raised); }
+@utility bg-term    { background: var(--layer-term); }
+@utility bg-rail    { background: var(--layer-rail); }
+@utility bg-scrim   { background: var(--layer-scrim); }
+@utility shadow-card { box-shadow: var(--elev-card); }
+@utility shadow-pop  { box-shadow: var(--elev-pop); }
+
+/* The agent's signature in daylight: a slowly turning brand aurora. */
+@utility aurora-frame {
+  border: 1.5px solid transparent;
+  background: var(--frame-fill, #FFFFFF) padding-box,
+    conic-gradient(from var(--aurora-angle), #0B89A1, #00C6FF, #E6F4F1, #F2E8C4, #FDD8B9, #FBB273, #0B89A1) border-box;
+}
+@utility bg-aurora { background: conic-gradient(from var(--aurora-angle, 200deg), #0B89A1, #00C6FF, #E6F4F1, #F2E8C4, #FDD8B9, #FBB273, #0B89A1); }
+@property --aurora-angle { syntax: "<angle>"; inherits: false; initial-value: 200deg; }
+@keyframes aurora-turn { to { --aurora-angle: 560deg; } }
+@utility animate-aurora { animation: aurora-turn 9s linear infinite; }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@utility text-shimmer {
+  background: linear-gradient(90deg, currentColor 0%, currentColor 40%, #00C6FF 50%, currentColor 60%, currentColor 100%) 0 0 / 200% 100%;
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 2.8s linear infinite;
+}
+
+/* screenshot comparisons only (?static) */
+.static *, .static *::before, .static *::after { animation: none !important; transition: none !important; }

@@ -1,0 +1,30 @@
+{
+  "name": "pegasus-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:demo": "node build.mjs",
+    "preview": "vite preview",
+    "brand-lint": "node brand-lint.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/overpass": "^5.3.0",
+    "@fontsource-variable/roboto": "^5.3.0",
+    "@fontsource/overpass-mono": "^5.3.0",
+    "lucide-react": "^1.64.0",
+    "motion": "^14.8.0",
+    "qrcode-generator": "^1.5.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.2",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.5",
+    "vite-plugin-singlefile": "^2.3.4"
+  }
+}

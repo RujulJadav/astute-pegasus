@@ -34,6 +34,8 @@ export PEGASUS_COOKIE_SECURE=false        # only when testing over plain http on
 python3 -m pegasus_cloud                  # http://127.0.0.1:8443
 ```
 
+The redesigned UI is at http://127.0.0.1:8443/next/ (sign-in and Fleet are live so far); see `frontend/README.md`.
+
 | Variable | Default | Purpose |
 |---|---|---|
 | `PEGASUS_ADMIN_PASSWORD` | (none) | Setup password for creating the first admin account; not used after that |

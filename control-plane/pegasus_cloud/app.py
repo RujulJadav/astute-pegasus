@@ -4209,6 +4209,28 @@ def index():
     return send_from_directory(app.static_folder, "index.html")
 
 
+# The redesigned UI (control-plane/frontend, built with `npm run build` into static/next/). Served beside the current
+# page until it covers everything; its routes live after the # so only index.html and its assets are served here.
+NEXT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "next")
+
+
+@app.get("/next")
+def next_redirect():
+    return "", 308, {"Location": "/next/"}
+
+
+@app.get("/next/")
+@app.get("/next/<path:path>")
+def next_ui(path="index.html"):
+    if not os.path.isfile(os.path.join(NEXT_DIR, "index.html")):
+        return ("The new UI isn't built yet: run `npm install && npm run build` in control-plane/frontend.", 404,
+                {"Content-Type": "text/plain; charset=utf-8"})
+    resp = send_from_directory(NEXT_DIR, path)
+    if path == "index.html":
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
 def main():
     init_db()
     signing_key()
