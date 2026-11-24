@@ -4,8 +4,14 @@ import { KeyRound, Plus, ShieldCheck, Users2, Check, Loader2, Fingerprint, Ticke
 import { cx } from "../../shared/ui.jsx";
 import { accessRequests, sshKeys, me } from "../../shared/data.js";
 import { Panel, PanelHead, Button, Pill, PageHeader, Avatar, Drawer, Field, inputCls, Toggle, Tooltip, ease } from "../kit.jsx";
+import LiveAccess from "./LiveAccess.jsx";
+import { useLive as useLiveMode } from "../../api/live.jsx";
 
 export default function Access() {
+  return useLiveMode().live ? <LiveAccess /> : <DemoAccess />;
+}
+
+function DemoAccess() {
   const [give, setGive] = useState(false);
   const [rule, setRule] = useState(true);
   return (

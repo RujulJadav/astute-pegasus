@@ -27,17 +27,17 @@ import SignIn from "./screens/SignIn.jsx";
 import ConsoleAi from "./parts/ConsoleAi.jsx";
 
 export const NAV = [
-  { id: "home", label: "Mission Control", icon: Radar, el: Home },
+  { id: "home", label: "Mission Control", icon: Radar, el: Home, live: true },
   { id: "fleet", label: "Fleet", icon: Server, el: Fleet, live: true },
   { id: "patching", label: "Patching", icon: ShieldCheck, el: Patching, badge: 1, live: true },
-  { id: "monitoring", label: "Monitoring", icon: Activity, el: Monitoring, badge: 1, tone: "orange" },
-  { id: "access", label: "SSH access", icon: KeyRound, el: Access, badge: 1 },
-  { id: "schedules", label: "Schedules", icon: CalendarClock, el: Schedules },
-  { id: "connectors", label: "Connectors", icon: Cable, el: Connectors },
+  { id: "monitoring", label: "Monitoring", icon: Activity, el: Monitoring, badge: 1, tone: "orange", live: true },
+  { id: "access", label: "SSH access", icon: KeyRound, el: Access, badge: 1, live: true },
+  { id: "schedules", label: "Schedules", icon: CalendarClock, el: Schedules, live: true },
+  { id: "connectors", label: "Connectors", icon: Cable, el: Connectors, live: true },
   { id: "integrations", label: "Integrations", icon: Blocks, el: Integrations, live: true },
-  { id: "settings", label: "Settings", icon: Settings2, el: Settings },
-  { id: "people", label: "People", icon: Users, el: People },
-  { id: "audit", label: "Audit log", icon: ScrollText, el: Audit },
+  { id: "settings", label: "Settings", icon: Settings2, el: Settings, live: true },
+  { id: "people", label: "People", icon: Users, el: People, live: true },
+  { id: "audit", label: "Audit log", icon: ScrollText, el: Audit, live: true },
 ];
 
 const Ctx = createContext(null);
@@ -45,7 +45,7 @@ export const useShell = () => useContext(Ctx);
 
 export default function App() {
   const L = useLive();
-  const [route, go] = useHashRoute(L.live ? "fleet" : "home");
+  const [route, go] = useHashRoute("home");
   const page = route.split(/[/?]/)[0];
   const current = NAV.find((n) => n.id === page) || NAV[0];
   // Closed by default so pages get the full width; opening it keeps it open across pages.
@@ -200,7 +200,7 @@ function Rail({ page, go }) {
 
 function TopBar({ title }) {
   const { agentOpen, setAgentOpen, scope, setScope, openPalette, theme, setTheme, working } = useShell();
-  const { clients } = useLive();
+  const { clients, live } = useLive();
   const [scopeOpen, setScopeOpen] = useState(false);
   const sel = clients.find((c) => c.id === scope);
   const conn = clients.map((c) => c.connector.status);
@@ -241,7 +241,7 @@ function TopBar({ title }) {
 
       <button onClick={openPalette} className="group mx-auto flex h-10 min-w-0 w-full max-w-[460px] items-center gap-3 whitespace-nowrap rounded-xl border border-fg/10 bg-fg/[0.035] px-3.5 text-left text-[13px] text-muted/70 transition hover:border-accent/30 hover:bg-fg/[0.06] hover:shadow-[0_0_0_4px_#00C6FF0f]">
         <Search className="size-4 text-muted/80 group-hover:text-accent" />
-        <span className="hidden min-w-0 flex-1 truncate @4xl:block">Ask Pegasus or jump to…</span><span className="flex-1 @4xl:hidden" />
+        <span className="hidden min-w-0 flex-1 truncate @4xl:block">{live ? "Jump to a screen or environment…" : "Ask Pegasus or jump to…"}</span><span className="flex-1 @4xl:hidden" />
         <Kbd>⌘</Kbd><Kbd>K</Kbd>
       </button>
 
@@ -262,11 +262,12 @@ function TopBar({ title }) {
             </AnimatePresence>
           </button>
         </Tooltip>
-        <button className="relative grid size-9 place-items-center rounded-lg border border-fg/10 bg-fg/[0.035] text-muted hover:text-fg day:bg-white" aria-label="Notifications">
+        {!live && <button className="relative grid size-9 place-items-center rounded-lg border border-fg/10 bg-fg/[0.035] text-muted hover:text-fg day:bg-white" aria-label="Notifications">
           <Bell className="size-4" />
           <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-orange px-1 text-[10px] font-bold text-navy">4</span>
-        </button>
-        {!agentOpen && theme !== "day" && (
+        </button>}
+        {/* The agent is future scope (no backend yet), so it's only in the demo. */}
+        {!live && !agentOpen && theme !== "day" && (
           <motion.button
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
             onClick={() => setAgentOpen(true)}
@@ -276,7 +277,7 @@ function TopBar({ title }) {
             <PanelRightOpen className="size-3.5 text-navy/60" />
           </motion.button>
         )}
-        {!agentOpen && theme === "day" && (
+        {!live && !agentOpen && theme === "day" && (
           <motion.button initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} onClick={() => setAgentOpen(true)}
             className="relative rounded-[10px] bg-aurora p-[1.5px] shadow-[0_8px_24px_-10px_#00C6FF] animate-aurora">
             <span className="flex h-[33px] items-center gap-2 rounded-[8.5px] bg-navy pl-2.5 pr-3 text-[13px] font-semibold text-white">

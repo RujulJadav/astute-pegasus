@@ -12,11 +12,17 @@ import Constellation from "./Constellation.jsx";
 import { severity } from "../../shared/data.js";
 import { fleetBriefing, health, envExtras, envLink } from "../fleetExtras.js";
 import { Stat, Section, AlertRow, JiraRow, Empty } from "../parts/bits.jsx";
+import LiveHome from "./LiveHome.jsx";
+import { useLive as useLiveMode } from "../../api/live.jsx";
+
+export default function Home() {
+  return useLiveMode().live ? <LiveHome /> : <DemoHome />;
+}
 
 // Mission Control is fleet-wide (5 Nov review): a fleet briefing (patching, downtime, CVEs, advisories) and an overall
 // health monitor. Instance alerts and the customer KPI cards moved to the Fleet page; clicking a dot in the
 // constellation opens that one instance in a slide-in panel.
-export default function Home() {
+function DemoHome() {
   const { go } = useShell();
   const [picked, setPicked] = useState(null);
   return (

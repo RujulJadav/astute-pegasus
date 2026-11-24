@@ -29,7 +29,7 @@ const TABS = [
   { value: "logs", label: "Logs" }, { value: "jobs", label: "Jobs" },
 ];
 
-export default function EnvDrawer({ env, ticket, onClose, onJob, onRemovalRequested }) {
+export default function EnvDrawer({ env, ticket, onClose, onJob, onRemovalRequested, onRemoveLive }) {
   const { clients } = useLive();
   const [tab, setTab] = useState("overview");
   const [confirm, setConfirm] = useState(null);
@@ -56,6 +56,8 @@ export default function EnvDrawer({ env, ticket, onClose, onJob, onRemovalReques
         footer={<>
           {!env?.live && <><Button variant="danger" icon={Trash2} size="sm" onClick={() => setRemoving(true)}>Request removal</Button>
           <span className="text-[11.5px] text-muted/80">Needs a change ticket and a second approver. Kept 30 days, restorable.</span></>}
+          {env?.live && onRemoveLive && <><Button variant="danger" icon={Trash2} size="sm" onClick={() => onRemoveLive(env)}>Remove environment</Button>
+          <span className="text-[11.5px] text-muted/80">Admins only. Its servers and schedules are kept 30 days and can be restored.</span></>}
           <span className="ml-auto text-[11.5px] text-muted/80">Actions run through {client?.connector.id}, in the safe order</span>
         </>}>
         {env && (

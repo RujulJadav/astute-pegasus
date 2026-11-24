@@ -3,7 +3,8 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, CornerDownLeft, ArrowRight, Server, Zap } from "lucide-react";
 import { cx } from "../shared/ui.jsx";
-import { agent, allEnvs } from "../shared/data.js";
+import { agent, allEnvs as sampleEnvs } from "../shared/data.js";
+import { useLive } from "../api/live.jsx";
 import { useShell, NAV } from "./App.jsx";
 import { Sparkle, Kbd, StateDot } from "./kit.jsx";
 
@@ -15,25 +16,27 @@ export default function Palette({ open, onClose }) {
 
   useEffect(() => { if (open) { setQ(""); setIdx(0); setTimeout(() => input.current?.focus(), 30); } }, [open]);
 
+  const { live, allEnvs: liveEnvs } = useLive();
+  const allEnvs = live ? liveEnvs : sampleEnvs;
   const groups = useMemo(() => {
     const m = (s) => s.toLowerCase().includes(q.toLowerCase());
     const ask = q.trim() ? [{ id: "ask", label: `Ask Pegasus: “${q.trim()}”`, icon: "agent", run: () => askAgent(q.trim()) }] : [];
     return [
-      { name: "Ask the agent", items: [...ask, ...agent.suggestions.filter(m).map((s) => ({ id: s, label: s, icon: "agent", run: () => askAgent(s) }))] },
+      { name: "Ask the agent", items: live ? [] : [...ask, ...agent.suggestions.filter(m).map((s) => ({ id: s, label: s, icon: "agent", run: () => askAgent(s) }))] },
       { name: "Go to", items: NAV.filter((n) => m(n.label)).map((n) => ({ id: n.id, label: n.label, Icon: n.icon, run: () => go(n.id) })) },
-      { name: "Environments", items: allEnvs.filter((e) => m(`${e.client} ${e.name} ${e.hosts.join(" ")}`)).slice(0, 6).map((e) => ({ id: e.id, label: `${e.client} · ${e.name}`, state: e.state, hint: e.behind ? `${e.behind} behind` : "Up to date", run: () => go(`fleet/${e.clientId}/${e.id}`) })) },
+      { name: "Environments", items: allEnvs.filter((e) => m(`${e.client} ${e.name} ${e.hosts.join(" ")}`)).slice(0, 6).map((e) => ({ id: e.id, label: `${e.client} · ${e.name}`, state: e.state, hint: live ? e.tier : e.behind ? `${e.behind} behind` : "Up to date", run: () => go(`fleet/${e.clientId}/${e.id}`) })) },
       { name: "Actions", items: [
         { id: "a1", label: "Check status everywhere", Icon: Zap, run: () => go("fleet") },
         { id: "a2", label: "Request approval for a patch", Icon: Zap, run: () => go("patching") },
         { id: "a3", label: "Add a person", Icon: Zap, run: () => go("people") },
         { id: "a4", label: "Give someone SSH access", Icon: Zap, run: () => go("access") },
-        { id: "a5", label: "Console AI · Parker (parkeroci)", Icon: Zap, run: () => openConsoleAi() },
+        ...(live ? [] : [{ id: "a5", label: "Console AI · Parker (parkeroci)", Icon: Zap, run: () => openConsoleAi() }]),
         { id: "a6", label: "Add a connector", Icon: Zap, run: () => go("connectors") },
-        { id: "a7", label: "Change approval settings (Jira)", Icon: Zap, run: () => go("settings") },
-        { id: "a8", label: "Sign-in screens", Icon: Zap, run: () => go("signin") },
+        { id: "a7", label: "Change approval settings (Jira)", Icon: Zap, run: () => go(live ? "integrations" : "settings") },
+        ...(live ? [] : [{ id: "a8", label: "Sign-in screens", Icon: Zap, run: () => go("signin") }]),
       ].filter((a) => m(a.label)) },
     ].filter((g) => g.items.length);
-  }, [q]);
+  }, [q, live, allEnvs]);
   const flat = groups.flatMap((g) => g.items);
 
   const onKey = (e) => {

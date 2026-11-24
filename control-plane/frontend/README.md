@@ -6,17 +6,32 @@ plane API. React 19, Tailwind 4, Motion, Vite.
 It runs beside the current page: the control plane serves the current UI at `/` and this one at **`/next/`**, so
 nothing changes for anyone using `/` until we switch.
 
-## What's live and what's still sample data
+## What's connected
 
 | Screen | State |
 |---|---|
 | Sign-in | **Live.** First-admin setup, email + password, authenticator setup (real QR), recovery codes, 6-digit or recovery code, forced password change, Google sign-in when the server has it on, sign out |
-| Fleet | **Live.** Customers, environments, servers and domains, domain states (polled every 30 s), connector status, Check status, Start / Stop / Restart / Clear cache / Test connection per environment and per domain, typed confirmation on production, live job output, recent jobs |
+Every screen runs on the control plane. Nothing in live mode is sample data.
+
+| Screen | State |
+|---|---|
+| Mission Control | **Live.** Fleet-wide numbers (customers, domains running, connectors online, updates outstanding, open tickets) and a *Needs you* list built from real rows: offline connectors, domains not running, outstanding updates by CVSS, tickets waiting or approved, SSH access requests, expiring certificates, failed jobs |
+| Fleet | **Live.** Customers, environments, servers and domains, domain states (polled every 30 s), connector status, Check status, Start / Stop / Restart / Clear cache / Test connection per environment and per domain, typed confirmation on production, live job output, recent jobs, Add servers (scan by IP, trust a new host key, add the domains found), Remove environment and Restore (kept 30 days), OCI Console link |
 | Patching | **Live.** Per environment: installed levels and Oracle's latest (Check patch levels, Look up latest again), outstanding updates ranked by CVSS from Oracle's advisory, by component or by server, Download (stage) per update or all, change ticket (Request approval with window, time zone, change type, notes), ticket list with Check now and Withdraw, Apply (typed confirmation on production, reboot option) with live output, monthly/quarterly cadence, automatic checks |
 | Integrations | **Live** for the ticketing adapters: Jira and ServiceNow settings per customer (URL, sign-in, project or group, approval states, transitions, extra fields), token saved encrypted and never sent back, Test connection, which system approvals go through, approval for every environment or production only. The other adapters are shown as not in Pegasus yet |
+| Monitoring | **Live** for what the control plane watches: domain availability, connector health, TLS certificates (addresses, warning days, Check now, the expiry ticket) and failed jobs |
+| SSH access | **Live.** Key register, Give access (pasted key checked by the backend), Check, Remove, requests with Approve / Reject / Withdraw, Jira tickets when change approval is on, approval on or off, production needs an end date and the name typed |
+| Schedules | **Live.** All schedules with Pause / Resume / Skip next / Delete, Add a schedule (weekly or once, time zone), the weekly start/stop plan per environment, typed confirmation on production |
+| Connectors | **Live.** Each connector (online, version, certificate, updates), Add a connector (one-time token and the command to run), Update, Remove, manual or automatic updates, releases |
+| Settings | **Live.** Patching (staging folder, servers at once, backups kept, time zone, cadence), CPU targets, OCI Console, start order and manual steps per environment, email (SMTP) with a test email |
+| People | **Live.** Everyone with role, client and status, Add a person (emailed link, or a temporary password to pass on), change role, Disable / Enable, Reset password, Reset MFA |
+| Audit log | **Live.** The latest 300 events, by customer, people or Pegasus, search, Export CSV |
 | My account | **Live.** Change password, new recovery codes |
-| Mission Control, Monitoring, SSH access, Schedules, Connectors, Settings, People, Audit log | Sample data, with a banner saying so. Next to connect |
-| On a Fleet tile or environment: uptime, alerts, Jira ticket, monitoring, logs, removal, Add servers, Connect OCI | Not in the API yet, so they're hidden or empty for live environments rather than made up |
+
+Not in the control plane, so not shown in live mode (the design keeps them under `?demo`): metrics and alarms from
+OCI Monitoring (CPU, memory, disk, uptime, logs), the Pegasus Agent and Console AI, notifications, per-environment
+alerts and SLA uptime on Fleet tiles, removal as a change request with a second approver, and the other adapters on
+Integrations (monitoring tools, clouds, chat). Each of these needs backend work first.
 
 ## Run it
 
@@ -51,8 +66,9 @@ tried end to end. `--reset` starts again from an empty database.
   maps them into the same shape as the design's sample data (`src/shared/data.js`), so screens switch over without
   being rewritten. It also queues jobs (`POST /api/clients/<id>/run`) and runs Check status.
 * `parts/JobConsole.jsx` streams a job's output from `GET /api/jobs/<id>?since=<n>`.
-* `screens/LivePatching.jsx` and `screens/LiveIntegrations.jsx` are the live versions of those screens (the endpoints
-  they use are listed at the top of each file); `Patching.jsx` and `Integrations.jsx` keep the design's demo for `?demo`.
+* Each screen has a live version, `screens/Live*.jsx`, with the endpoints it uses listed at the top of the file. The
+  design's original (`Patching.jsx`, `People.jsx`, …) picks the live version when the app is live, and keeps the demo
+  for `?demo`. `liveKit.jsx` has the small shared pieces (current customer, load/reload, messages).
   The backend applies one update or all outstanding updates per window and per ticket, so Patching's selection is one
   row or all of them.
 

@@ -5,8 +5,14 @@ import { cx, sparkPath, Sparkline } from "../../shared/ui.jsx";
 import { hosts, alarms, monitoringSource } from "../../shared/data.js";
 import { Panel, PanelHead, Button, Pill, PageHeader, Segmented, Sparkle, ease } from "../kit.jsx";
 import { useShell } from "../App.jsx";
+import LiveMonitoring from "./LiveMonitoring.jsx";
+import { useLive as useLiveMode } from "../../api/live.jsx";
 
 export default function Monitoring() {
+  return useLiveMode().live ? <LiveMonitoring /> : <DemoMonitoring />;
+}
+
+function DemoMonitoring() {
   const { go, askAgent } = useShell();
   const [range, setRange] = useState("6h");
   const [open, setOpen] = useState(0);

@@ -4,6 +4,12 @@ import { CalendarClock, Plus, Globe2, PauseCircle, Leaf, MousePointer2, ListTree
 import { cx, AnimatedNumber } from "../../shared/ui.jsx";
 import { schedules, DAYS, TZ, scheduleRuns, SCHEDULE_ACTIONS, TIMEZONES } from "../../shared/data.js";
 import { Panel, PanelHead, Button, Pill, PageHeader, Segmented, ease, dots, Drawer, Field, inputCls, TierTag } from "../kit.jsx";
+import LiveSchedules from "./LiveSchedules.jsx";
+import { useLive as useLiveMode } from "../../api/live.jsx";
+
+export default function Schedules() {
+  return useLiveMode().live ? <LiveSchedules /> : <DemoSchedules />;
+}
 
 const PRESETS = {
   office: (d, h) => d < 5 && h >= 7 && h < 19,
@@ -13,7 +19,7 @@ const PRESETS = {
 };
 const build = (fn) => Array.from({ length: 7 }, (_, d) => Array.from({ length: 24 }, (_, h) => (fn(d, h) ? 1 : 0)));
 
-export default function Schedules() {
+function DemoSchedules() {
   const [add, setAdd] = useState(false);
   return (
     <div className="@container">

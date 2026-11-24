@@ -7,10 +7,16 @@ import { Panel, Button, Pill, PageHeader, Avatar, Drawer, Field, inputCls, Toggl
 
 const STATUS_TONE = { Active: ["teal", ShieldCheck], "Temporary password": ["apricot", Mail], "MFA not set up": ["apricot", KeyRound], Locked: ["orange", Lock], Disabled: ["neutral", Ban] };
 import { AstuteLogo } from "../../shared/Logo.jsx";
+import LivePeople from "./LivePeople.jsx";
+import { useLive as useLiveMode } from "../../api/live.jsx";
+
+export default function People() {
+  return useLiveMode().live ? <LivePeople /> : <DemoPeople />;
+}
 
 const ROLE_ICON = { Viewer: Eye, Operator: Wrench, Admin: Crown };
 
-export default function People() {
+function DemoPeople() {
   const [add, setAdd] = useState(false);
   return (
     <div className="@container">

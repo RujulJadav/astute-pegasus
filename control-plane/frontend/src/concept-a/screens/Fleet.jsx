@@ -8,6 +8,9 @@ import {
 import { cx, AnimatedNumber } from "../../shared/ui.jsx";
 import { removedEnvs, changeRequest } from "../../shared/data.js";
 import { useLive, ago } from "../../api/live.jsx";
+import LiveAddServers from "../parts/LiveAddServers.jsx";
+import { get as apiGet, post as apiPost, api as apiCall } from "../../api/client.js";
+const del = (path, body) => apiCall(path, { method: "DELETE", body });
 import { Panel, PanelHead, Button, Pill, PageHeader, Segmented, StateDot, STATE_LABEL, TierTag, Drawer, Field, inputCls, Confirm, ease, Sparkle, Avatar } from "../kit.jsx";
 import { useShell } from "../App.jsx";
 import JobConsole from "../parts/JobConsole.jsx";
@@ -24,8 +27,18 @@ const FILTERS = [
 // carousel. Deep links: #/fleet/<client>/<env>?ticket=<key> opens that environment, as Jira emails do.
 export default function Fleet() {
   const { scope, setScope, route, go, openConsoleAi } = useShell();
-  const { clients, allEnvs, live, run, checkAll, loading } = useLive();
+  const { clients, allEnvs, live, run, checkAll, loading, refresh } = useLive();
   const [notice, setNotice] = useState(null);
+  const [removeEnv, setRemoveEnv] = useState(null);
+  const [removedTick, setRemovedTick] = useState(0);
+  const removeLive = async (e) => {
+    setRemoveEnv(null);
+    try {
+      await del(`/api/clients/${e.clientId}/environments/${encodeURIComponent(e.name)}`, { confirm: e.name });
+      go(base); setRemovedTick((n) => n + 1); refresh();
+      setNotice({ text: `${e.name} removed. Its servers and schedules are kept for 30 days: restore it under Removed environments.` });
+    } catch (err) { setNotice({ tone: "error", text: err.message }); }
+  };
   const [filter, setFilter] = useState("all");
   const [q, setQ] = useState("");
   const [discover, setDiscover] = useState(false);
@@ -87,7 +100,7 @@ export default function Fleet() {
             ? `${one.envs.length} environment${one.envs.length === 1 ? "" : "s"}${one.cloud ? ` on ${one.cloud}${one.region ? ` ${one.region}` : ""}` : ""}. Domains are checked every 10 minutes through ${one.connector.id}; ${one.checking ? "a check is running now" : `the last check was ${ago(one.lastAuto)}`}.`
             : `${one.envs.length} environments on ${one.cloud} ${one.region}. Domains are checked every 10 minutes through ${one.connector.id}; the last check was 2 min ago.`)
           : live && !clients.length ? (loading ? "Loading customers…" : "No customers yet. An admin adds them in the current app (Clients).") : "Every customer at once, for leads. Admins usually work on one customer: pick it above."}
-        actions={<><Button icon={RefreshCw} onClick={checkStatus}>Check status</Button><Button variant="primary" icon={Plus} onClick={() => setDiscover(true)}>Add servers</Button></>} />
+        actions={<><Button icon={RefreshCw} onClick={checkStatus}>Check status</Button><Button variant="primary" icon={Plus} onClick={() => setDiscover(true)} disabled={live && !one}>Add servers</Button></>} />
 
       {notice && (
         <div role="status" className={cx("mb-5 flex items-center gap-3 rounded-xl border px-4 py-2.5 text-[12.5px] text-fg", notice.tone === "error" ? "border-orange/50 bg-orange/10" : "border-teal/40 bg-teal/10")}>
@@ -120,7 +133,7 @@ export default function Fleet() {
               {one && (
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                   {c.cloud && <Pill icon={Cloud}>{c.cloud}{c.region ? ` · ${c.region}` : ""}</Pill>}{c.cadence && <Pill tone="cream">{c.cadence}</Pill>}{c.ticketing && <Pill>{c.ticketing}</Pill>}
-                  {c.cloud === "OCI" && <span className="ml-auto flex gap-2"><Button size="sm" variant="ghost" icon={ExternalLink} onClick={() => c.ociUrl && window.open(c.ociUrl, "_blank", "noopener")}>Open OCI Console</Button><Button size="sm" variant="ghost" icon={Bot} onClick={openConsoleAi}>Console AI</Button></span>}
+                  {c.cloud === "OCI" && <span className="ml-auto flex gap-2"><Button size="sm" variant="ghost" icon={ExternalLink} onClick={() => c.ociUrl && window.open(c.ociUrl, "_blank", "noopener")}>Open OCI Console</Button>{!live && <Button size="sm" variant="ghost" icon={Bot} onClick={openConsoleAi}>Console AI</Button>}</span>}
                 </div>
               )}
               {envs.length
@@ -131,6 +144,10 @@ export default function Fleet() {
         })}
       </div>
 
+      {live && one && <LiveRemovals key={`${one.id}|${removedTick}`} c={one} onRestored={(t) => { refresh(); setNotice({ text: t }); }} onError={(t) => setNotice({ tone: "error", text: t })} />}
+      {live && <Confirm open={!!removeEnv} onClose={() => setRemoveEnv(null)} danger typeToConfirm={removeEnv?.name} title={`Remove ${removeEnv?.name}?`} cta="Remove environment" onConfirm={() => removeLive(removeEnv)}>
+        {`Its ${removeEnv?.servers?.length || 0} domains and any schedules leave Pegasus now. Nothing changes on the servers, and it can be restored for 30 days.`}
+      </Confirm>}
       {!live && <Panel className="mt-8">
         <PanelHead icon={ArchiveRestore} title="Removals" meta="Removal needs a change ticket and a second approver. Removed environments are kept for 30 days and can be restored." />
         {pending.map((r) => (
@@ -152,8 +169,8 @@ export default function Fleet() {
         ))}
       </Panel>}
 
-      <EnvDrawer env={detail} ticket={ticket} onClose={() => go(base)} onJob={(j) => (j.id || !j.action || !detail ? setJob(j) : startJob(detail.clientId, detail, j, j.confirmed))} onRemovalRequested={(r) => setPending((p) => [...p, r])} />
-      <Discover open={discover} onClose={() => setDiscover(false)} />
+      <EnvDrawer env={detail} ticket={ticket} onClose={() => go(base)} onRemoveLive={(e) => setRemoveEnv(e)} onJob={(j) => (j.id || !j.action || !detail ? setJob(j) : startJob(detail.clientId, detail, j, j.confirmed))} onRemovalRequested={(r) => setPending((p) => [...p, r])} />
+      {live ? one && <LiveAddServers open={discover} onClose={() => setDiscover(false)} client={one} /> : <Discover open={discover} onClose={() => setDiscover(false)} />}
       <OciConnect open={oci} c={one} onClose={() => setOci(false)} />
       <JobConsole job={job} onClose={() => setJob(null)} />
       <Confirm open={!!confirm} onClose={() => setConfirm(null)} danger title={`${confirm?.a.label || "Stop all"} on ${confirm?.j.env}?`} typeToConfirm={confirm?.e.name} cta={confirm?.a.label || "Stop all"}
@@ -181,12 +198,12 @@ function CustomerPicker({ scope, onPick }) {
         <span className="grid h-8 min-w-8 place-items-center rounded-lg bg-[linear-gradient(135deg,#0B89A1,#003C51)] px-1 font-mono text-[10px] font-semibold text-white">{sel ? sel.code : "ALL"}</span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[13.5px] font-medium text-fg">{sel ? sel.name : "All customers"}</span>
-          <span className="block truncate text-[11px] text-muted/75">{sel ? `${sel.envs.length} environments${sel.cloud ? ` · ${sel.cloud} ${sel.region}` : ""}` : `${clients.length} customers · cross-customer view for leads`}</span>
+          <span className="block truncate text-[11px] text-muted/75">{sel ? `${sel.envs.length} environment${sel.envs.length === 1 ? "" : "s"}${sel.cloud ? ` · ${sel.cloud} ${sel.region}` : ""}` : `${clients.length} customers · cross-customer view for leads`}</span>
         </span>
         {sel && dot(sel)}
         <ChevronDown className={cx("size-4 text-muted transition-transform", open && "rotate-180")} />
       </button>
-      <span className="text-[11.5px] text-muted/70">{clients.length} customers</span>
+      <span className="text-[11.5px] text-muted/70">{clients.length} customer{clients.length === 1 ? "" : "s"}</span>
       <AnimatePresence>
         {open && <>
           <div className="fixed inset-0 z-30" onClick={() => { setOpen(false); setQ(""); }} />
@@ -294,6 +311,30 @@ function CustomerSummary({ c, onOci, onOpenEnv }) {
         </Panel>
       </div>
     </div>
+  );
+}
+
+// Removed environments (kept 30 days): GET /api/clients/<cid>/removed-environments, POST …/restore.
+function LiveRemovals({ c, onRestored, onError }) {
+  const [rows, setRows] = useState(null);
+  const load = () => apiGet(`/api/clients/${c.id}/removed-environments`).then((r) => setRows(r.removed)).catch(() => setRows([]));
+  useEffect(() => { load(); }, [c.id]);
+  if (!rows?.length) return null;
+  const restore = async (r) => {
+    try { await apiPost(`/api/removed-environments/${r.id}/restore`, {}); await load(); onRestored(`${r.environment} restored, with its ${r.servers} domains${r.schedules ? ` and ${r.schedules} schedules` : ""}.`); }
+    catch (e) { onError(e.message); }
+  };
+  return (
+    <Panel className="mt-8">
+      <PanelHead icon={ArchiveRestore} title="Removed environments" meta="Kept for 30 days, then deleted" />
+      {rows.map((r) => (
+        <div key={r.id} className="flex items-center gap-3 border-t border-fg/[0.06] px-6 py-3 text-[12.5px]">
+          <span className="font-medium text-fg">{r.environment}</span>
+          <span className="text-muted/80">{r.servers} domains{r.schedules ? ` · ${r.schedules} schedules` : ""} · removed by {r.removed_by} {ago(r.removed_at)} · restorable until {new Date(r.until).toLocaleDateString()}</span>
+          <Button size="sm" className="ml-auto" icon={ArchiveRestore} onClick={() => restore(r)}>Restore</Button>
+        </div>
+      ))}
+    </Panel>
   );
 }
 

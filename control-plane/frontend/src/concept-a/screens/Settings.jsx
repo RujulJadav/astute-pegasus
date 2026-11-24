@@ -5,10 +5,16 @@ import { cx } from "../../shared/ui.jsx";
 import { clientSettings } from "../../shared/data.js";
 import { Panel, PanelHead, Button, PageHeader, Field, inputCls, Toggle, Segmented, ExtLink, ease } from "../kit.jsx";
 import { useShell } from "../App.jsx";
+import LiveSettings from "./LiveSettings.jsx";
+import { useLive as useLiveMode } from "../../api/live.jsx";
+
+export default function Settings() {
+  return useLiveMode().live ? <LiveSettings /> : <DemoSettings />;
+}
 
 const J = clientSettings.jira;
 
-export default function Settings() {
+function DemoSettings() {
   const { go } = useShell();
   const [jiraOn, setJiraOn] = useState(J.enabled);
   const [blockSelf, setBlockSelf] = useState(J.blockSelf);

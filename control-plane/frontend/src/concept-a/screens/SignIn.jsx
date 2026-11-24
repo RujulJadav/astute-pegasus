@@ -34,7 +34,7 @@ export default function SignIn() {
 
   const finish = async () => {
     if (live) await reloadSession();
-    window.location.hash = "/" + (nextRoute || (live ? "fleet" : "home"));
+    window.location.hash = "/" + (nextRoute || "home");
   };
 
   // One wrapper for every live call: busy state, the backend's own error text, restart when the session expired.

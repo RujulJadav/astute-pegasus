@@ -4,10 +4,16 @@ import { ScrollText, Download, Search } from "lucide-react";
 import { cx } from "../../shared/ui.jsx";
 import { audit } from "../../shared/data.js";
 import { Panel, Button, Pill, PageHeader, Avatar, Segmented, inputCls, Sparkle, ease } from "../kit.jsx";
+import LiveAudit from "./LiveAudit.jsx";
+import { useLive as useLiveMode } from "../../api/live.jsx";
+
+export default function Audit() {
+  return useLiveMode().live ? <LiveAudit /> : <DemoAudit />;
+}
 
 const TAG_TONE = { Change: "cyan", Agent: "cream", People: "neutral", Access: "apricot", "Sign-in": "neutral", Schedule: "neutral", Connector: "neutral" };
 
-export default function Audit() {
+function DemoAudit() {
   const [who, setWho] = useState("all");
   const [q, setQ] = useState("");
   const rows = audit.filter((a) => (who === "all" || a.kind === who) && (!q || `${a.actor} ${a.what} ${a.detail}`.toLowerCase().includes(q.toLowerCase())));

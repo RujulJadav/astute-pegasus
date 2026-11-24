@@ -4,8 +4,14 @@ import { Cable, Plus, Copy, Check, ShieldCheck, KeyRound, RefreshCw, Trash2, Inf
 import { cx } from "../../shared/ui.jsx";
 import { connectors, connectorRelease, signingKey } from "../../shared/data.js";
 import { Panel, PanelHead, Button, Pill, PageHeader, Drawer, Segmented, ease } from "../kit.jsx";
+import LiveConnectors from "./LiveConnectors.jsx";
+import { useLive as useLiveMode } from "../../api/live.jsx";
 
 export default function Connectors() {
+  return useLiveMode().live ? <LiveConnectors /> : <DemoConnectors />;
+}
+
+function DemoConnectors() {
   const [add, setAdd] = useState(false);
   const [mode, setMode] = useState(connectorRelease.mode);
   return (
